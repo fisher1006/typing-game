@@ -470,7 +470,8 @@
                     state.combo++;
                     updateStats();
                     showStarPopup();
-                    nextQuestion();
+                    // 等待语音播放完再跳下一个 (1.5秒)
+                    setTimeout(() => nextQuestion(), 1500);
                 } else {
                     console.log('Wrong!');
                     playSound('error');
@@ -514,7 +515,8 @@
                         state.combo++;
                         updateStats();
                         showStarPopup();
-                        setTimeout(nextQuestion, 500);
+                        // 等待语音播放完再跳下一个
+                        setTimeout(() => nextQuestion(), 1500);
                     }
                 } else {
                     // Wrong key
@@ -632,7 +634,8 @@
                 state.combo++;
                 updateStats();
                 showStarPopup();
-                setTimeout(nextQuestion, 800);
+                // 等待语音播放完再跳下一个
+                setTimeout(() => nextQuestion(), 1500);
             } else {
                 buttons[index].classList.add('wrong');
                 playSound('error');
