@@ -541,7 +541,9 @@
         }
 
         function speakLetter(letter) {
-            speak(letter.toUpperCase(), 'en-US');
+            // 小朋友不认识英文字母，用中文说"请按X键"
+            const upperLetter = letter.toUpperCase();
+            speak('请按' + upperLetter + '键', 'zh-CN');
         }
 
         function speakChinese(text) {
@@ -590,10 +592,14 @@
                     keyDiv.className = 'mobile-key';
                     keyDiv.textContent = key;
                     keyDiv.dataset.key = key;
+                    // 移动端同时支持 touch 和 click
                     keyDiv.addEventListener('touchstart', (e) => {
                         e.preventDefault();
                         handleKeyInput(key);
                     }, { passive: false });
+                    keyDiv.addEventListener('click', (e) => {
+                        handleKeyInput(key);
+                    });
                     rowDiv.appendChild(keyDiv);
                 });
                 
