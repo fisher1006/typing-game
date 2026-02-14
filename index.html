@@ -192,7 +192,7 @@
 
         /* On-screen keyboard for mobile */
         .mobile-keyboard {
-            display: none;
+            display: flex;
             width: 100%;
             max-width: 500px;
             background: #2C3E50;
@@ -201,10 +201,8 @@
             margin-bottom: 15px;
         }
 
-        .mobile-keyboard.active {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+        .mobile-keyboard.inactive {
+            display: none;
         }
 
         .mobile-keyboard-row {
@@ -367,18 +365,15 @@
             .keyboard {
                 display: none;
             }
-            .mobile-keyboard {
-                display: none;
-            }
-            .mobile-keyboard.active {
-                display: flex;
-            }
         }
 
         /* Desktop - show virtual keyboard */
         @media (min-width: 769px) {
             .keyboard {
                 display: flex;
+            }
+            .mobile-keyboard {
+                display: none;
             }
         }
     </style>
@@ -607,13 +602,14 @@
             });
         }
 
-        // Show/hide mobile keyboard
+        // Show/hide mobile keyboard - always show when playing
         function updateKeyboardVisibility() {
             const mobileKeyboard = document.getElementById('mobileKeyboard');
-            if (state.isMobile && state.isPlaying) {
-                mobileKeyboard.classList.add('active');
+            // 移动端和桌面端都显示虚拟键盘，方便小朋友
+            if (state.isPlaying) {
+                mobileKeyboard.classList.remove('inactive');
             } else {
-                mobileKeyboard.classList.remove('active');
+                mobileKeyboard.classList.add('inactive');
             }
         }
 
