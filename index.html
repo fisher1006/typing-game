@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童打字学习游戏</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Microsoft YaHei', cursive, sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #E0F7FA 50%, #98FB98 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 36px;
+            color: #FF6B6B;
+            text-shadow: 2px 2px 0 #FFE66D, 4px 4px 0 rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .stat {
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .star { color: #FFD700; }
+        .combo { color: #FF6B6B; }
+
+        /* Stage Selector */
+        .stage-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stage-btn {
+            padding: 12px 24px;
+            font-size: 18px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .stage-btn:nth-child(1) { background: #4ECDC4; color: white; }
+        .stage-btn:nth-child(2) { background: #45B7D1; color: white; }
+        .stage-btn:nth-child(3) { background: #96CEB4; color: white; }
+
+        .stage-btn.active {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        /* Difficulty */
+        .difficulty {
+            margin-bottom: 20px;
+        }
+
+        .difficulty select {
+            padding: 8px 16px;
+            font-size: 16px;
+            border-radius: 15px;
+            border: 2px solid #4ECDC4;
+            font-family: inherit;
+        }
+
+        /* Game Area */
+        .game-area {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            text-align: center;
+            min-width: 400px;
+            min-height: 200px;
+            margin-bottom: 30px;
+        }
+
+        .current-char {
+            font-size: 120px;
+            color: #333;
+            margin: 20px 0;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        .pinyin-label {
+            font-size: 28px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .hint {
+            font-size: 18px;
+            color: #999;
+        }
+
+        /* Virtual Keyboard */
+        .keyboard {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            background: #2C3E50;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .key {
+            width: 50px;
+            height: 50px;
+            background: #34495E;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            transition: all 0.15s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .key.highlight {
+            background: #F39C12 !important;
+            transform: scale(1.15);
+            box-shadow: 0 0 20px #F39C12;
+        }
+
+        .key.pressed {
+            transform: scale(0.95);
+            background: #27AE60 !important;
+        }
+
+        .key.space { width: 300px; }
+
+        /* Timer */
+        .timer {
+            width: 200px;
+            height: 10px;
+            background: #EEE;
+            border-radius: 5px;
+            margin: 0 auto 20px;
+            overflow: hidden;
+        }
+
+        .timer-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ECDC4, #45B7D1);
+            transition: width 0.1s linear;
+            width: 100%;
+        }
+
+        /* Star Animation */
+        .star-popup {
+            position: fixed;
+            font-size: 60px;
+            animation: starFly 1s forwards;
+            pointer-events: none;
+        }
+
+        @keyframes starFly {
+            0% { opacity: 1; transform: scale(0) translateY(0); }
+            50% { opacity: 1; transform: scale(1.2) translateY(-100px); }
+            100% { opacity: 0; transform: scale(1) translateY(-200px); }
+        }
+
+        /* Character Options (Stage 3) */
+        .char-options {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .char-option {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            font-family: inherit;
+        }
+
+        .char-option:hover {
+            transform: scale(1.1);
+        }
+
+        .char-option.correct {
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+        }
+
+        .char-option.wrong {
+            background: linear-gradient(135deg, #FF6B6B 0%, #EE5A5A 100%);
+        }
+
+        /* Start Screen */
+        .start-screen {
+            text-align: center;
+        }
+
+        .start-btn {
+            font-size: 28px;
+            padding: 20px 50px;
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 5px 20px rgba(255,107,107,0.4);
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,107,107,0.5);
+        }
+
+        /* Caps Lock Warning */
+        .caps-warning {
+            background: #FFE66D;
+            color: #333;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            display: none;
+        }
+
+        /* Restart Button */
+        .restart-btn {
+            font-size: 18px;
+            padding: 10px 30px;
+            background: #4ECDC4;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="title">🎯 儿童打字学习游戏</h1>
+        <div class="stats">
+            <div class="stat">⭐ <span id="stars">0</span></div>
+            <div class="stat">🔥 Combo: <span id="combo">0</span></div>
+        </div>
+    </div>
+
+    <div class="caps-warning" id="capsWarning">
+        ⚠️ 请关闭 Caps Lock 大写锁定键，否则键盘提示会错乱
+    </div>
+
+    <div class="stage-selector">
+        <button class="stage-btn active" data-stage="1">🔤 英文字母</button>
+        <button class="stage-btn" data-stage="2">📝 汉语拼音</button>
+        <button class="stage-btn" data-stage="3">🈶 拼音选汉字</button>
+    </div>
+
+    <div class="difficulty">
+        <select id="difficulty">
+            <option value="easy">🌟 简单</option>
+            <option value="medium">⚡ 中等</option>
+            <option value="hard">🔥 困难</option>
+        </select>
+    </div>
+
+    <div class="game-area" id="gameArea">
+        <div class="start-screen">
+            <button class="start-btn" onclick="startGame()">开始游戏 🎮</button>
+        </div>
+    </div>
+
+    <div class="keyboard" id="keyboard"></div>
+
+    <div class="timer" id="timerContainer" style="display: none;">
+        <div class="timer-bar" id="timerBar"></div>
+    </div>
+
+    <script>
+        // Game State
+        let state = {
+            stage: 1,
+            difficulty: 'easy',
+            stars: 0,
+            combo: 0,
+            currentTarget: '',
+            currentInput: '',  // 修复：记录当前输入进度
+            isPlaying: false,
+            timer: null,
+            timeLeft: 10,
+            maxTime: 10
+        };
+
+        // Data - 扩展拼音数据
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
+        
+        const pinyinData = [
+            { han: '马', pinyin: 'ma' },
+            { han: '猫', pinyin: 'mao' },
+            { han: '狗', pinyin: 'gou' },
+            { han: '鱼', pinyin: 'yu' },
+            { han: '鸟', pinyin: 'niao' },
+            { han: '兔', pinyin: 'tu' },
+            { han: '猪', pinyin: 'zhu' },
+            { han: '羊', pinyin: 'yang' },
+            { han: '牛', pinyin: 'niu' },
+            { han: '苹果', pinyin: 'pingguo' },
+            { han: '爸爸', pinyin: 'baba' },
+            { han: '妈妈', pinyin: 'mama' },
+            { han: '爷爷', pinyin: 'yeye' },
+            { han: '奶奶', pinyin: 'naiai' },
+            { han: '哥哥', pinyin: 'gege' },
+            { han: '弟弟', pinyin: 'didi' },
+            { han: '姐姐', pinyin: 'jiejie' },
+            { han: '妹妹', pinyin: 'meimei' },
+            { han: '朋友', pinyin: 'pengyou' },
+            { han: '老师', pinyin: 'laoshi' },
+            { han: '学校', pinyin: 'xuexiao' },
+            { han: '学习', pinyin: 'xuexi' },
+            { han: '中国', pinyin: 'zhongguo' },
+            { han: '中国人', pinyin: 'zhongguoren' },
+            { han: '你好', pinyin: 'nihao' },
+            { han: '谢谢', pinyin: 'xiexie' },
+            { han: '再见', pinyin: 'zaijian' },
+            { han: '水', pinyin: 'shui' },
+            { han: '火', pinyin: 'huo' },
+            { han: '土', pinyin: 'tu' },
+            { han: '金', pinyin: 'jin' },
+            { han: '木', pinyin: 'mu' },
+            { han: '天', pinyin: 'tian' },
+            { han: '地', pinyin: 'di' },
+            { han: '人', pinyin: 'ren' },
+            { han: '大', pinyin: 'da' },
+            { han: '小', pinyin: 'xiao' },
+            { han: '上', pinyin: 'shang' },
+            { han: '下', pinyin: 'xia' },
+            { han: '左', pinyin: 'zuo' },
+            { han: '右', pinyin: 'you' },
+            { han: '山', pinyin: 'shan' },
+            { han: '水', pinyin: 'shui' },
+            { han: '日', pinyin: 'ri' },
+            { han: '月', pinyin: 'yue' },
+            { han: '星', pinyin: 'xing' }
+        ];
+
+        const charOptions = [
+            { correct: '马', options: ['妈', '马', '吗'] },
+            { correct: '猫', options: ['猫', '苗', '描'] },
+            { correct: '狗', options: ['狗', '够', '钩'] },
+            { correct: '鱼', options: ['鱼', '雨', '于'] },
+            { correct: '鸟', options: ['鸟', '袅', '尿'] },
+            { correct: '爸', options: ['爸', '八', '巴'] },
+            { correct: '妈', options: ['妈', '吗', '马'] },
+            { correct: '好', options: ['好', '号', '浩'] }
+        ];
+
+        // Keyboard Layout
+        const keyboardRows = [
+            '1234567890'.split(''),
+            'QWERTYUIOP'.split(''),
+            'ASDFGHJKL'.split(''),
+            'ZXCVBNM'.split('')
+        ];
+
+        // Audio Context
+        let audioCtx = null;
+        let speechSynth = null; // 语音合成
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (!speechSynth) {
+                speechSynth = window.speechSynthesis;
+            }
+        }
+
+        // 朗读发音
+        function speak(text, lang = 'zh-CN') {
+            if (!speechSynth) return;
+            
+            // 停止当前朗读
+            speechSynth.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            utterance.rate = 0.8; // 放慢一点，适合小朋友
+            utterance.pitch = 1.2; // 稍微高一点，可爱一点
+            
+            speechSynth.speak(utterance);
+        }
+
+        // 朗读字母发音（英文）
+        function speakLetter(letter) {
+            speak(letter.toUpperCase(), 'en-US');
+        }
+
+        // 朗读汉字或拼音
+        function speakChinese(text) {
+            speak(text, 'zh-CN');
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            switch(type) {
+                case 'correct':
+                    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.3);
+                    break;
+                case 'error':
+                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                    oscillator.type = 'sawtooth';
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.2);
+                    break;
+                case 'star':
+                    oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime + 0.1);
+                    oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime + 0.2);
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.4);
+                    break;
+                case 'combo':
+                    for (let i = 0; i < 3; i++) {
+                        const osc = audioCtx.createOscillator();
+                        const gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.frequency.setValueAtTime(400 + i * 200, audioCtx.currentTime + i * 0.1);
+                        gain.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.15);
+                        osc.start(audioCtx.currentTime + i * 0.1);
+                        osc.stop(audioCtx.currentTime + i * 0.1 + 0.15);
+                    }
+                    break;
+            }
+        }
+
+        // Initialize Keyboard
+        function initKeyboard() {
+            const keyboard = document.getElementById('keyboard');
+            keyboard.innerHTML = '';
+            
+            keyboardRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'keyboard-row';
+                
+                row.forEach(key => {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'key';
+                    keyDiv.textContent = key;
+                    // 存储大写和小写两种形式，方便匹配
+                    keyDiv.dataset.keyUpper = key.toUpperCase();
+                    keyDiv.dataset.keyLower = key.toLowerCase();
+                    rowDiv.appendChild(keyDiv);
+                });
+                
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        // Highlight Key - 修复：同时匹配大写和小写
+        function highlightKey(char) {
+            const keys = document.querySelectorAll('.key');
+            const upperChar = char.toUpperCase();
+            const lowerChar = char.toLowerCase();
+            
+            keys.forEach(key => {
+                if (key.dataset.keyUpper === upperChar || key.dataset.keyLower === lowerChar) {
+                    key.classList.add('highlight');
+                }
+            });
+        }
+
+        function clearHighlight() {
+            const keys = document.querySelectorAll('.key');
+            keys.forEach(key => key.classList.remove('highlight'));
+        }
+
+        function pressKey(char) {
+            const keys = document.querySelectorAll('.key');
+            const upperChar = char.toUpperCase();
+            const lowerChar = char.toLowerCase();
+            
+            keys.forEach(key => {
+                if (key.dataset.keyUpper === upperChar || key.dataset.keyLower === lowerChar) {
+                    key.classList.add('pressed');
+                    setTimeout(() => key.classList.remove('pressed'), 150);
+                }
+            });
+        }
+
+        // Start Game
+        function startGame() {
+            initAudio();
+            state.isPlaying = true;
+            state.stars = 0;
+            state.combo = 0;
+            state.currentInput = '';
+            updateStats();
+            // 朗读欢迎语
+            speakChinese('游戏开始！');
+            nextQuestion();
+        }
+
+        // Next Question
+        function nextQuestion() {
+            clearHighlight();
+            stopTimer();
+            state.currentInput = '';  // 重置输入进度
+            
+            if (state.stage === 1) {
+                // English Letters
+                state.currentTarget = letters[Math.floor(Math.random() * letters.length)];
+                showLetterQuestion();
+            } else if (state.stage === 2) {
+                // Pinyin
+                const data = pinyinData[Math.floor(Math.random() * pinyinData.length)];
+                state.currentTarget = data.pinyin;
+                state.hanzi = data.han;
+                showPinyinQuestion();
+            } else if (state.stage === 3) {
+                // Choose Character
+                const data = charOptions[Math.floor(Math.random() * charOptions.length)];
+                state.currentTarget = data.correct;
+                state.options = data.options;
+                showCharQuestion();
+            }
+            
+            startTimer();
+        }
+
+        // Show Letter Question
+        function showLetterQuestion() {
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = `
+                <div class="current-char">${state.currentTarget}</div>
+                <div class="hint">请在键盘上找出这个字母并按下</div>
+                <button class="restart-btn" onclick="restartGame()">🔄 重新开始</button>
+            `;
+            // 延迟一下确保 DOM 渲染完成
+            setTimeout(() => highlightKey(state.currentTarget), 50);
+            // 朗读字母发音
+            setTimeout(() => speakLetter(state.currentTarget), 300);
+        }
+
+        // Show Pinyin Question
+        function showPinyinQuestion() {
+            const gameArea = document.getElementById('gameArea');
+            gameArea.innerHTML = `
+                <div class="pinyin-label">${state.hanzi}</div>
+                <div class="current-char" id="pinyinDisplay">${state.currentTarget}</div>
+                <div class="hint">请输入这个字的拼音</div>
+                <button class="restart-btn" onclick="restartGame()">🔄 重新开始</button>
+            `;
+            if (state.currentTarget.length > 0) {
+                setTimeout(() => highlightKey(state.currentTarget[0]), 50);
+            }
+            // 朗读汉字和拼音
+            setTimeout(() => speakChinese(state.hanzi + '，' + state.currentTarget), 300);
+        }
+
+        // Show Character Question
+        function showCharQuestion() {
+            const gameArea = document.getElementById('gameArea');
+            const optionsHtml = state.options.map((opt, i) => 
+                `<button class="char-option" data-index="${i}" onclick="selectChar(${i})">${opt}</button>`
+            ).join('');
+            
+            gameArea.innerHTML = `
+                <div class="pinyin-label">请选择正确的汉字</div>
+                <div class="current-char">${state.currentTarget}</div>
+                <div class="char-options">${optionsHtml}</div>
+                <button class="restart-btn" onclick="restartGame()">🔄 重新开始</button>
+            `;
+            // 朗读题目
+            setTimeout(() => speakChinese('请选择' + state.currentTarget + '字'), 300);
+        }
+
+        // Restart Game
+        function restartGame() {
+            state.stars = 0;
+            state.combo = 0;
+            state.currentInput = '';
+            updateStats();
+            nextQuestion();
+        }
+
+        // Select Character (Stage 3)
+        function selectChar(index) {
+            const selected = state.options[index];
+            const buttons = document.querySelectorAll('.char-option');
+            
+            if (selected === state.currentTarget) {
+                buttons[index].classList.add('correct');
+                playSound('correct');
+                playSound('star');
+                state.stars++;
+                state.combo++;
+                updateStats();
+                showStarPopup();
+                setTimeout(nextQuestion, 800);
+            } else {
+                buttons[index].classList.add('wrong');
+                playSound('error');
+                state.combo = 0;
+                updateStats();
+                setTimeout(nextQuestion, 800);
+            }
+        }
+
+        // Timer - 修复：简化逻辑
+        function startTimer() {
+            const timerContainer = document.getElementById('timerContainer');
+            const timerBar = document.getElementById('timerBar');
+            
+            if (state.difficulty === 'easy') {
+                timerContainer.style.display = 'none';
+                return;
+            }
+            
+            timerContainer.style.display = 'block';
+            state.maxTime = state.difficulty === 'medium' ? 10 : 5;
+            state.timeLeft = state.maxTime;
+            
+            timerBar.style.width = '100%';
+            
+            if (state.timer) clearInterval(state.timer);
+            
+            state.timer = setInterval(() => {
+                state.timeLeft -= 0.1;
+                const percentage = (state.timeLeft / state.maxTime) * 100;
+                timerBar.style.width = Math.max(0, percentage) + '%';
+                
+                if (state.timeLeft <= 0) {
+                    clearInterval(state.timer);
+                    playSound('error');
+                    state.combo = 0;
+                    updateStats();
+                    nextQuestion();
+                }
+            }, 100);
+        }
+
+        function stopTimer() {
+            if (state.timer) {
+                clearInterval(state.timer);
+                state.timer = null;
+            }
+        }
+
+        // Update Stats
+        function updateStats() {
+            document.getElementById('stars').textContent = state.stars;
+            document.getElementById('combo').textContent = state.combo;
+        }
+
+        // Star Popup
+        function showStarPopup() {
+            const star = document.createElement('div');
+            star.className = 'star-popup';
+            star.textContent = '⭐';
+            star.style.left = '50%';
+            star.style.top = '50%';
+            document.body.appendChild(star);
+            setTimeout(() => star.remove(), 1000);
+        }
+
+        // Check Caps Lock
+        function checkCapsLock(e) {
+            const warning = document.getElementById('capsWarning');
+            if (e.getModifierState && e.getModifierState('CapsLock')) {
+                warning.style.display = 'block';
+            } else {
+                warning.style.display = 'none';
+            }
+        }
+
+        // Keyboard Input - 修复：简化拼音阶段逻辑
+        document.addEventListener('keydown', (e) => {
+            checkCapsLock(e);
+            
+            if (!state.isPlaying) return;
+            if (state.stage === 3) return; // Stage 3 uses mouse
+            
+            const key = e.key.toLowerCase();
+            if (!/^[a-z]$/.test(key)) return;
+            
+            pressKey(key);
+            
+            if (state.stage === 1) {
+                // Letter stage - 直接匹配
+                if (key === state.currentTarget.toLowerCase()) {
+                    playSound('correct');
+                    if (state.combo > 0) playSound('combo');
+                    state.stars++;
+                    state.combo++;
+                    updateStats();
+                    showStarPopup();
+                    nextQuestion();
+                } else {
+                    playSound('error');
+                    state.combo = 0;
+                    updateStats();
+                }
+            } else if (state.stage === 2) {
+                // Pinyin stage - 修复：简化逻辑
+                const target = state.currentTarget.toLowerCase();
+                const expectedKey = target[state.currentInput.length];
+                
+                if (key === expectedKey) {
+                    // 正确按键
+                    state.currentInput += key;
+                    pressKey(key);
+                    
+                    // 更新显示
+                    const display = document.getElementById('pinyinDisplay');
+                    if (display) {
+                        display.textContent = state.currentTarget.substring(0, state.currentInput.length) + 
+                            '<span style="color: #4ECDC4">' + 
+                            state.currentTarget.substring(state.currentInput.length) + 
+                            '</span>';
+                    }
+                    
+                    // 高亮下一个字符
+                    clearHighlight();
+                    if (state.currentInput.length < target.length) {
+                        setTimeout(() => highlightKey(target[state.currentInput.length]), 100);
+                    }
+                    
+                    // 检查是否完成
+                    if (state.currentInput.toLowerCase() === target) {
+                        playSound('correct');
+                        if (state.combo > 0) playSound('combo');
+                        state.stars++;
+                        state.combo++;
+                        updateStats();
+                        showStarPopup();
+                        setTimeout(nextQuestion, 500);
+                    }
+                } else {
+                    // 错误按键
+                    playSound('error');
+                    state.combo = 0;
+                    updateStats();
+                    // 重置当前输入
+                    state.currentInput = '';
+                    const display = document.getElementById('pinyinDisplay');
+                    if (display) {
+                        display.textContent = state.currentTarget;
+                    }
+                    setTimeout(() => highlightKey(target[0]), 100);
+                }
+            }
+        });
+
+        // Stage Selector
+        document.querySelectorAll('.stage-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.stage = parseInt(btn.dataset.stage);
+                state.combo = 0;
+                state.currentInput = '';
+                updateStats();
+                
+                const gameArea = document.getElementById('gameArea');
+                gameArea.innerHTML = `
+                    <div class="start-screen">
+                        <button class="start-btn" onclick="startGame()">开始游戏 🎮</button>
+                    </div>
+                `;
+                clearHighlight();
+            });
+        });
+
+        // Difficulty Selector
+        document.getElementById('difficulty').addEventListener('change', (e) => {
+            state.difficulty = e.target.value;
+        });
+
+        // Initialize
+        initKeyboard();
+    </script>
+</body>
+</html>
