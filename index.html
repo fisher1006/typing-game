@@ -2,13 +2,19 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>儿童打字学习游戏</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            touch-action: manipulation;
+            overflow-x: hidden;
         }
 
         body {
@@ -18,32 +24,32 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
         }
 
         /* Header */
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .title {
-            font-size: 36px;
+            font-size: clamp(24px, 6vw, 36px);
             color: #FF6B6B;
             text-shadow: 2px 2px 0 #FFE66D, 4px 4px 0 rgba(0,0,0,0.1);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         .stats {
             display: flex;
-            gap: 30px;
+            gap: 20px;
             justify-content: center;
-            font-size: 20px;
+            font-size: clamp(16px, 4vw, 20px);
         }
 
         .stat {
             background: white;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
@@ -54,15 +60,17 @@
         /* Stage Selector */
         .stage-selector {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .stage-btn {
-            padding: 12px 24px;
-            font-size: 18px;
+            padding: 10px 16px;
+            font-size: clamp(14px, 3.5vw, 18px);
             border: none;
-            border-radius: 25px;
+            border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s;
             font-family: inherit;
@@ -73,18 +81,18 @@
         .stage-btn:nth-child(3) { background: #96CEB4; color: white; }
 
         .stage-btn.active {
-            transform: scale(1.1);
+            transform: scale(1.05);
             box-shadow: 0 5px 20px rgba(0,0,0,0.2);
         }
 
         /* Difficulty */
         .difficulty {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .difficulty select {
             padding: 8px 16px;
-            font-size: 16px;
+            font-size: clamp(14px, 3.5vw, 16px);
             border-radius: 15px;
             border: 2px solid #4ECDC4;
             font-family: inherit;
@@ -93,35 +101,36 @@
         /* Game Area */
         .game-area {
             background: white;
-            border-radius: 30px;
-            padding: 40px;
+            border-radius: 25px;
+            padding: clamp(20px, 5vw, 40px);
             box-shadow: 0 10px 40px rgba(0,0,0,0.15);
             text-align: center;
-            min-width: 400px;
-            min-height: 200px;
-            margin-bottom: 30px;
+            width: 100%;
+            max-width: 500px;
+            min-height: 180px;
+            margin-bottom: 20px;
         }
 
         .current-char {
-            font-size: 120px;
+            font-size: clamp(60px, 20vw, 120px);
             color: #333;
-            margin: 20px 0;
+            margin: 15px 0;
             animation: bounce 0.5s ease;
         }
 
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            50% { transform: translateY(-10px); }
         }
 
         .pinyin-label {
-            font-size: 28px;
+            font-size: clamp(20px, 5vw, 28px);
             color: #666;
             margin-bottom: 10px;
         }
 
         .hint {
-            font-size: 18px;
+            font-size: clamp(14px, 3.5vw, 18px);
             color: #999;
         }
 
@@ -129,38 +138,51 @@
         .keyboard {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             background: #2C3E50;
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 600px;
+            /* 默认隐藏，移动端游戏时显示 */
+        }
+
+        .keyboard.hidden {
+            display: none;
         }
 
         .keyboard-row {
             display: flex;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
+            flex-wrap: wrap;
         }
 
         .key {
-            width: 50px;
-            height: 50px;
+            width: clamp(28px, 8vw, 50px);
+            height: clamp(28px, 8vw, 50px);
             background: #34495E;
-            border-radius: 8px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: clamp(12px, 3vw, 22px);
             color: white;
             transition: all 0.15s;
             cursor: pointer;
             user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .key:active {
+            transform: scale(0.95);
         }
 
         .key.highlight {
             background: #F39C12 !important;
-            transform: scale(1.15);
-            box-shadow: 0 0 20px #F39C12;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px #F39C12;
         }
 
         .key.pressed {
@@ -168,15 +190,59 @@
             background: #27AE60 !important;
         }
 
-        .key.space { width: 300px; }
+        /* On-screen keyboard for mobile */
+        .mobile-keyboard {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            background: #2C3E50;
+            padding: 8px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        .mobile-keyboard.active {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .mobile-keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .mobile-key {
+            flex: 1;
+            min-width: 25px;
+            max-width: 45px;
+            height: clamp(35px, 10vw, 50px);
+            background: #34495E;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(10px, 3vw, 18px);
+            color: white;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .mobile-key:active, .mobile-key.highlight {
+            background: #4ECDC4;
+            transform: scale(0.95);
+        }
 
         /* Timer */
         .timer {
-            width: 200px;
-            height: 10px;
+            width: 100%;
+            max-width: 200px;
+            height: 8px;
             background: #EEE;
-            border-radius: 5px;
-            margin: 0 auto 20px;
+            border-radius: 4px;
+            margin: 0 auto 15px;
             overflow: hidden;
         }
 
@@ -190,34 +256,36 @@
         /* Star Animation */
         .star-popup {
             position: fixed;
-            font-size: 60px;
+            font-size: clamp(40px, 10vw, 60px);
             animation: starFly 1s forwards;
             pointer-events: none;
+            z-index: 1000;
         }
 
         @keyframes starFly {
             0% { opacity: 1; transform: scale(0) translateY(0); }
-            50% { opacity: 1; transform: scale(1.2) translateY(-100px); }
-            100% { opacity: 0; transform: scale(1) translateY(-200px); }
+            50% { opacity: 1; transform: scale(1.2) translateY(-50px); }
+            100% { opacity: 0; transform: scale(1) translateY(-100px); }
         }
 
         /* Character Options (Stage 3) */
         .char-options {
             display: flex;
-            gap: 20px;
+            gap: 10px;
             justify-content: center;
-            margin-top: 20px;
+            margin-top: 15px;
+            flex-wrap: wrap;
         }
 
         .char-option {
-            width: 80px;
-            height: 80px;
+            width: clamp(50px, 15vw, 80px);
+            height: clamp(50px, 15vw, 80px);
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 15px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 40px;
+            font-size: clamp(24px, 6vw, 40px);
             color: white;
             cursor: pointer;
             transition: all 0.3s;
@@ -225,8 +293,8 @@
             font-family: inherit;
         }
 
-        .char-option:hover {
-            transform: scale(1.1);
+        .char-option:active {
+            transform: scale(0.95);
         }
 
         .char-option.correct {
@@ -243,20 +311,20 @@
         }
 
         .start-btn {
-            font-size: 28px;
-            padding: 20px 50px;
+            font-size: clamp(20px, 5vw, 28px);
+            padding: 15px 40px;
             background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
             color: white;
             border: none;
-            border-radius: 30px;
+            border-radius: 25px;
             cursor: pointer;
             font-family: inherit;
             box-shadow: 0 5px 20px rgba(255,107,107,0.4);
             transition: all 0.3s;
         }
 
-        .start-btn:hover {
-            transform: translateY(-3px);
+        .start-btn:active {
+            transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(255,107,107,0.5);
         }
 
@@ -264,24 +332,54 @@
         .caps-warning {
             background: #FFE66D;
             color: #333;
-            padding: 10px 20px;
+            padding: 8px 15px;
             border-radius: 10px;
-            margin-bottom: 15px;
-            font-size: 16px;
+            margin-bottom: 12px;
+            font-size: clamp(12px, 3vw, 16px);
             display: none;
         }
 
         /* Restart Button */
         .restart-btn {
-            font-size: 18px;
-            padding: 10px 30px;
+            font-size: clamp(14px, 3.5vw, 18px);
+            padding: 8px 20px;
             background: #4ECDC4;
             color: white;
             border: none;
-            border-radius: 20px;
+            border-radius: 15px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 15px;
             font-family: inherit;
+        }
+
+        /* Mobile hint */
+        .mobile-hint {
+            display: none;
+            font-size: clamp(12px, 3vw, 14px);
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-hint {
+                display: block;
+            }
+            .keyboard {
+                display: none;
+            }
+            .mobile-keyboard {
+                display: none;
+            }
+            .mobile-keyboard.active {
+                display: flex;
+            }
+        }
+
+        /* Desktop - show virtual keyboard */
+        @media (min-width: 769px) {
+            .keyboard {
+                display: flex;
+            }
         }
     </style>
 </head>
@@ -295,13 +393,13 @@
     </div>
 
     <div class="caps-warning" id="capsWarning">
-        ⚠️ 请关闭 Caps Lock 大写锁定键，否则键盘提示会错乱
+        ⚠️ 请关闭 Caps Lock 大写锁定键
     </div>
 
     <div class="stage-selector">
-        <button class="stage-btn active" data-stage="1">🔤 英文字母</button>
-        <button class="stage-btn" data-stage="2">📝 汉语拼音</button>
-        <button class="stage-btn" data-stage="3">🈶 拼音选汉字</button>
+        <button class="stage-btn active" data-stage="1">🔤 字母</button>
+        <button class="stage-btn" data-stage="2">📝 拼音</button>
+        <button class="stage-btn" data-stage="3">🈶 选字</button>
     </div>
 
     <div class="difficulty">
@@ -312,13 +410,21 @@
         </select>
     </div>
 
+    <div class="mobile-hint" id="mobileHint">
+        📱 手机端点击下方键盘输入
+    </div>
+
     <div class="game-area" id="gameArea">
         <div class="start-screen">
             <button class="start-btn" onclick="startGame()">开始游戏 🎮</button>
         </div>
     </div>
 
+    <!-- 桌面端虚拟键盘 -->
     <div class="keyboard" id="keyboard"></div>
+
+    <!-- 移动端键盘 -->
+    <div class="mobile-keyboard" id="mobileKeyboard"></div>
 
     <div class="timer" id="timerContainer" style="display: none;">
         <div class="timer-bar" id="timerBar"></div>
@@ -332,14 +438,15 @@
             stars: 0,
             combo: 0,
             currentTarget: '',
-            currentInput: '',  // 修复：记录当前输入进度
+            currentInput: '',
             isPlaying: false,
             timer: null,
             timeLeft: 10,
-            maxTime: 10
+            maxTime: 10,
+            isMobile: false
         };
 
-        // Data - 扩展拼音数据
+        // Data
         const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
         
         const pinyinData = [
@@ -366,15 +473,11 @@
             { han: '学校', pinyin: 'xuexiao' },
             { han: '学习', pinyin: 'xuexi' },
             { han: '中国', pinyin: 'zhongguo' },
-            { han: '中国人', pinyin: 'zhongguoren' },
             { han: '你好', pinyin: 'nihao' },
             { han: '谢谢', pinyin: 'xiexie' },
             { han: '再见', pinyin: 'zaijian' },
             { han: '水', pinyin: 'shui' },
             { han: '火', pinyin: 'huo' },
-            { han: '土', pinyin: 'tu' },
-            { han: '金', pinyin: 'jin' },
-            { han: '木', pinyin: 'mu' },
             { han: '天', pinyin: 'tian' },
             { han: '地', pinyin: 'di' },
             { han: '人', pinyin: 'ren' },
@@ -382,10 +485,7 @@
             { han: '小', pinyin: 'xiao' },
             { han: '上', pinyin: 'shang' },
             { han: '下', pinyin: 'xia' },
-            { han: '左', pinyin: 'zuo' },
-            { han: '右', pinyin: 'you' },
             { han: '山', pinyin: 'shan' },
-            { han: '水', pinyin: 'shui' },
             { han: '日', pinyin: 'ri' },
             { han: '月', pinyin: 'yue' },
             { han: '星', pinyin: 'xing' }
@@ -410,9 +510,16 @@
             'ZXCVBNM'.split('')
         ];
 
+        // Mobile keyboard layout
+        const mobileKeyboardRows = [
+            'qwertyuiop'.split(''),
+            'asdfghjkl'.split(''),
+            'zxcvbnm'.split('')
+        ];
+
         // Audio Context
         let audioCtx = null;
-        let speechSynth = null; // 语音合成
+        let speechSynth = null;
 
         function initAudio() {
             if (!audioCtx) {
@@ -423,83 +530,31 @@
             }
         }
 
-        // 朗读发音
         function speak(text, lang = 'zh-CN') {
             if (!speechSynth) return;
-            
-            // 停止当前朗读
             speechSynth.cancel();
-            
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
-            utterance.rate = 0.8; // 放慢一点，适合小朋友
-            utterance.pitch = 1.2; // 稍微高一点，可爱一点
-            
+            utterance.rate = 0.8;
+            utterance.pitch = 1.2;
             speechSynth.speak(utterance);
         }
 
-        // 朗读字母发音（英文）
         function speakLetter(letter) {
             speak(letter.toUpperCase(), 'en-US');
         }
 
-        // 朗读汉字或拼音
         function speakChinese(text) {
             speak(text, 'zh-CN');
         }
 
-        function playSound(type) {
-            if (!audioCtx) return;
-            
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            switch(type) {
-                case 'correct':
-                    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
-                    oscillator.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
-                    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-                    oscillator.start(audioCtx.currentTime);
-                    oscillator.stop(audioCtx.currentTime + 0.3);
-                    break;
-                case 'error':
-                    oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-                    oscillator.type = 'sawtooth';
-                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-                    oscillator.start(audioCtx.currentTime);
-                    oscillator.stop(audioCtx.currentTime + 0.2);
-                    break;
-                case 'star':
-                    oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-                    oscillator.frequency.setValueAtTime(800, audioCtx.currentTime + 0.1);
-                    oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime + 0.2);
-                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
-                    oscillator.start(audioCtx.currentTime);
-                    oscillator.stop(audioCtx.currentTime + 0.4);
-                    break;
-                case 'combo':
-                    for (let i = 0; i < 3; i++) {
-                        const osc = audioCtx.createOscillator();
-                        const gain = audioCtx.createGain();
-                        osc.connect(gain);
-                        gain.connect(audioCtx.destination);
-                        osc.frequency.setValueAtTime(400 + i * 200, audioCtx.currentTime + i * 0.1);
-                        gain.gain.setValueAtTime(0.15, audioCtx.currentTime + i * 0.1);
-                        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + i * 0.1 + 0.15);
-                        osc.start(audioCtx.currentTime + i * 0.1);
-                        osc.stop(audioCtx.currentTime + i * 0.1 + 0.15);
-                    }
-                    break;
-            }
+        // Detect mobile
+        function detectMobile() {
+            state.isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+                || window.innerWidth < 769;
         }
 
-        // Initialize Keyboard
+        // Initialize Desktop Keyboard
         function initKeyboard() {
             const keyboard = document.getElementById('keyboard');
             keyboard.innerHTML = '';
@@ -512,7 +567,6 @@
                     const keyDiv = document.createElement('div');
                     keyDiv.className = 'key';
                     keyDiv.textContent = key;
-                    // 存储大写和小写两种形式，方便匹配
                     keyDiv.dataset.keyUpper = key.toUpperCase();
                     keyDiv.dataset.keyLower = key.toLowerCase();
                     rowDiv.appendChild(keyDiv);
@@ -522,8 +576,44 @@
             });
         }
 
-        // Highlight Key - 修复：同时匹配大写和小写
+        // Initialize Mobile Keyboard
+        function initMobileKeyboard() {
+            const keyboard = document.getElementById('mobileKeyboard');
+            keyboard.innerHTML = '';
+            
+            mobileKeyboardRows.forEach(row => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'mobile-keyboard-row';
+                
+                row.forEach(key => {
+                    const keyDiv = document.createElement('div');
+                    keyDiv.className = 'mobile-key';
+                    keyDiv.textContent = key;
+                    keyDiv.dataset.key = key;
+                    keyDiv.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        handleKeyInput(key);
+                    }, { passive: false });
+                    rowDiv.appendChild(keyDiv);
+                });
+                
+                keyboard.appendChild(rowDiv);
+            });
+        }
+
+        // Show/hide mobile keyboard
+        function updateKeyboardVisibility() {
+            const mobileKeyboard = document.getElementById('mobileKeyboard');
+            if (state.isMobile && state.isPlaying) {
+                mobileKeyboard.classList.add('active');
+            } else {
+                mobileKeyboard.classList.remove('active');
+            }
+        }
+
+        // Highlight Key
         function highlightKey(char) {
+            // Desktop keyboard
             const keys = document.querySelectorAll('.key');
             const upperChar = char.toUpperCase();
             const lowerChar = char.toLowerCase();
@@ -533,35 +623,120 @@
                     key.classList.add('highlight');
                 }
             });
+
+            // Mobile keyboard
+            const mobileKeys = document.querySelectorAll('.mobile-key');
+            mobileKeys.forEach(key => {
+                if (key.dataset.key === lowerChar) {
+                    key.classList.add('highlight');
+                }
+            });
         }
 
         function clearHighlight() {
-            const keys = document.querySelectorAll('.key');
-            keys.forEach(key => key.classList.remove('highlight'));
+            document.querySelectorAll('.key, .mobile-key').forEach(key => {
+                key.classList.remove('highlight');
+            });
         }
 
         function pressKey(char) {
-            const keys = document.querySelectorAll('.key');
             const upperChar = char.toUpperCase();
             const lowerChar = char.toLowerCase();
             
-            keys.forEach(key => {
+            // Desktop
+            document.querySelectorAll('.key').forEach(key => {
                 if (key.dataset.keyUpper === upperChar || key.dataset.keyLower === lowerChar) {
                     key.classList.add('pressed');
                     setTimeout(() => key.classList.remove('pressed'), 150);
                 }
             });
+
+            // Mobile
+            document.querySelectorAll('.mobile-key').forEach(key => {
+                if (key.dataset.key === lowerChar) {
+                    key.classList.add('highlight');
+                    setTimeout(() => key.classList.remove('highlight'), 150);
+                }
+            });
+        }
+
+        // Handle key input (both physical and mobile keyboard)
+        function handleKeyInput(key) {
+            if (!state.isPlaying || state.stage === 3) return;
+            
+            const k = key.toLowerCase();
+            pressKey(key);
+            
+            if (state.stage === 1) {
+                // Letter stage
+                if (k === state.currentTarget.toLowerCase()) {
+                    playSound('correct');
+                    if (state.combo > 0) playSound('combo');
+                    state.stars++;
+                    state.combo++;
+                    updateStats();
+                    showStarPopup();
+                    nextQuestion();
+                } else {
+                    playSound('error');
+                    state.combo = 0;
+                    updateStats();
+                }
+            } else if (state.stage === 2) {
+                // Pinyin stage
+                const target = state.currentTarget.toLowerCase();
+                const expectedKey = target[state.currentInput.length];
+                
+                if (k === expectedKey) {
+                    state.currentInput += k;
+                    pressKey(k);
+                    
+                    const display = document.getElementById('pinyinDisplay');
+                    if (display) {
+                        display.innerHTML = state.currentTarget.substring(0, state.currentInput.length) + 
+                            '<span style="color: #4ECDC4">' + 
+                            state.currentTarget.substring(state.currentInput.length) + 
+                            '</span>';
+                    }
+                    
+                    clearHighlight();
+                    if (state.currentInput.length < target.length) {
+                        setTimeout(() => highlightKey(target[state.currentInput.length]), 100);
+                    }
+                    
+                    if (state.currentInput.toLowerCase() === target) {
+                        playSound('correct');
+                        if (state.combo > 0) playSound('combo');
+                        state.stars++;
+                        state.combo++;
+                        updateStats();
+                        showStarPopup();
+                        setTimeout(nextQuestion, 500);
+                    }
+                } else {
+                    playSound('error');
+                    state.combo = 0;
+                    updateStats();
+                    state.currentInput = '';
+                    const display = document.getElementById('pinyinDisplay');
+                    if (display) {
+                        display.textContent = state.currentTarget;
+                    }
+                    setTimeout(() => highlightKey(target[0]), 100);
+                }
+            }
         }
 
         // Start Game
         function startGame() {
             initAudio();
+            detectMobile();
             state.isPlaying = true;
             state.stars = 0;
             state.combo = 0;
             state.currentInput = '';
             updateStats();
-            // 朗读欢迎语
+            updateKeyboardVisibility();
             speakChinese('游戏开始！');
             nextQuestion();
         }
@@ -570,20 +745,18 @@
         function nextQuestion() {
             clearHighlight();
             stopTimer();
-            state.currentInput = '';  // 重置输入进度
+            state.currentInput = '';
+            updateKeyboardVisibility();
             
             if (state.stage === 1) {
-                // English Letters
                 state.currentTarget = letters[Math.floor(Math.random() * letters.length)];
                 showLetterQuestion();
             } else if (state.stage === 2) {
-                // Pinyin
                 const data = pinyinData[Math.floor(Math.random() * pinyinData.length)];
                 state.currentTarget = data.pinyin;
                 state.hanzi = data.han;
                 showPinyinQuestion();
             } else if (state.stage === 3) {
-                // Choose Character
                 const data = charOptions[Math.floor(Math.random() * charOptions.length)];
                 state.currentTarget = data.correct;
                 state.options = data.options;
@@ -593,7 +766,6 @@
             startTimer();
         }
 
-        // Show Letter Question
         function showLetterQuestion() {
             const gameArea = document.getElementById('gameArea');
             gameArea.innerHTML = `
@@ -601,13 +773,10 @@
                 <div class="hint">请在键盘上找出这个字母并按下</div>
                 <button class="restart-btn" onclick="restartGame()">🔄 重新开始</button>
             `;
-            // 延迟一下确保 DOM 渲染完成
             setTimeout(() => highlightKey(state.currentTarget), 50);
-            // 朗读字母发音
             setTimeout(() => speakLetter(state.currentTarget), 300);
         }
 
-        // Show Pinyin Question
         function showPinyinQuestion() {
             const gameArea = document.getElementById('gameArea');
             gameArea.innerHTML = `
@@ -619,11 +788,9 @@
             if (state.currentTarget.length > 0) {
                 setTimeout(() => highlightKey(state.currentTarget[0]), 50);
             }
-            // 朗读汉字和拼音
             setTimeout(() => speakChinese(state.hanzi + '，' + state.currentTarget), 300);
         }
 
-        // Show Character Question
         function showCharQuestion() {
             const gameArea = document.getElementById('gameArea');
             const optionsHtml = state.options.map((opt, i) => 
@@ -636,11 +803,9 @@
                 <div class="char-options">${optionsHtml}</div>
                 <button class="restart-btn" onclick="restartGame()">🔄 重新开始</button>
             `;
-            // 朗读题目
             setTimeout(() => speakChinese('请选择' + state.currentTarget + '字'), 300);
         }
 
-        // Restart Game
         function restartGame() {
             state.stars = 0;
             state.combo = 0;
@@ -649,7 +814,6 @@
             nextQuestion();
         }
 
-        // Select Character (Stage 3)
         function selectChar(index) {
             const selected = state.options[index];
             const buttons = document.querySelectorAll('.char-option');
@@ -672,7 +836,6 @@
             }
         }
 
-        // Timer - 修复：简化逻辑
         function startTimer() {
             const timerContainer = document.getElementById('timerContainer');
             const timerBar = document.getElementById('timerBar');
@@ -712,24 +875,21 @@
             }
         }
 
-        // Update Stats
         function updateStats() {
             document.getElementById('stars').textContent = state.stars;
             document.getElementById('combo').textContent = state.combo;
         }
 
-        // Star Popup
         function showStarPopup() {
             const star = document.createElement('div');
             star.className = 'star-popup';
             star.textContent = '⭐';
             star.style.left = '50%';
-            star.style.top = '50%';
+            star.style.top = '40%';
             document.body.appendChild(star);
             setTimeout(() => star.remove(), 1000);
         }
 
-        // Check Caps Lock
         function checkCapsLock(e) {
             const warning = document.getElementById('capsWarning');
             if (e.getModifierState && e.getModifierState('CapsLock')) {
@@ -739,85 +899,20 @@
             }
         }
 
-        // Keyboard Input - 修复：简化拼音阶段逻辑
+        // Physical keyboard input
         document.addEventListener('keydown', (e) => {
             checkCapsLock(e);
             
             if (!state.isPlaying) return;
-            if (state.stage === 3) return; // Stage 3 uses mouse
+            if (state.stage === 3) return;
             
             const key = e.key.toLowerCase();
             if (!/^[a-z]$/.test(key)) return;
             
-            pressKey(key);
-            
-            if (state.stage === 1) {
-                // Letter stage - 直接匹配
-                if (key === state.currentTarget.toLowerCase()) {
-                    playSound('correct');
-                    if (state.combo > 0) playSound('combo');
-                    state.stars++;
-                    state.combo++;
-                    updateStats();
-                    showStarPopup();
-                    nextQuestion();
-                } else {
-                    playSound('error');
-                    state.combo = 0;
-                    updateStats();
-                }
-            } else if (state.stage === 2) {
-                // Pinyin stage - 修复：简化逻辑
-                const target = state.currentTarget.toLowerCase();
-                const expectedKey = target[state.currentInput.length];
-                
-                if (key === expectedKey) {
-                    // 正确按键
-                    state.currentInput += key;
-                    pressKey(key);
-                    
-                    // 更新显示
-                    const display = document.getElementById('pinyinDisplay');
-                    if (display) {
-                        display.textContent = state.currentTarget.substring(0, state.currentInput.length) + 
-                            '<span style="color: #4ECDC4">' + 
-                            state.currentTarget.substring(state.currentInput.length) + 
-                            '</span>';
-                    }
-                    
-                    // 高亮下一个字符
-                    clearHighlight();
-                    if (state.currentInput.length < target.length) {
-                        setTimeout(() => highlightKey(target[state.currentInput.length]), 100);
-                    }
-                    
-                    // 检查是否完成
-                    if (state.currentInput.toLowerCase() === target) {
-                        playSound('correct');
-                        if (state.combo > 0) playSound('combo');
-                        state.stars++;
-                        state.combo++;
-                        updateStats();
-                        showStarPopup();
-                        setTimeout(nextQuestion, 500);
-                    }
-                } else {
-                    // 错误按键
-                    playSound('error');
-                    state.combo = 0;
-                    updateStats();
-                    // 重置当前输入
-                    state.currentInput = '';
-                    const display = document.getElementById('pinyinDisplay');
-                    if (display) {
-                        display.textContent = state.currentTarget;
-                    }
-                    setTimeout(() => highlightKey(target[0]), 100);
-                }
-            }
+            handleKeyInput(key);
         });
 
-        // Stage Selector
+        // Stage selector
         document.querySelectorAll('.stage-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.stage-btn').forEach(b => b.classList.remove('active'));
@@ -834,16 +929,19 @@
                     </div>
                 `;
                 clearHighlight();
+                updateKeyboardVisibility();
             });
         });
 
-        // Difficulty Selector
+        // Difficulty selector
         document.getElementById('difficulty').addEventListener('change', (e) => {
             state.difficulty = e.target.value;
         });
 
         // Initialize
+        detectMobile();
         initKeyboard();
+        initMobileKeyboard();
     </script>
 </body>
 </html>
