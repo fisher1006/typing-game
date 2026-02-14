@@ -328,19 +328,53 @@
         // Audio & Speech
         let audioCtx = null;
         let speechSynth = null;
+        let voicesLoaded = false;
+
+        // 预加载语音列表
+        if (typeof speechSynthesis !== 'undefined') {
+            speechSynth = window.speechSynthesis;
+            speechSynth.onvoiceschanged = () => {
+                voicesLoaded = true;
+            };
+        }
 
         function initAudio() {
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             if (!speechSynth) speechSynth = window.speechSynthesis;
+            // 尝试提前加载语音
+            if (!voicesLoaded && speechSynth.getVoices().length > 0) {
+                voicesLoaded = true;
+            }
         }
 
         function speak(text, lang = 'zh-CN') {
             if (!speechSynth) return;
             speechSynth.cancel();
+            
+            // 获取可用的语音
+            const voices = speechSynth.getVoices();
+            
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
-            utterance.rate = 0.8;
-            utterance.pitch = 1.2;
+            
+            // 尝试找到更适合儿童的语音
+            if (lang === 'zh-CN') {
+                // 找中文语音，优先选声音活泼的
+                const chineseVoices = voices.filter(v => v.lang.includes('zh'));
+                if (chineseVoices.length > 0) {
+                    // 尝试找"Ting"或年轻女声
+                    const friendlyVoice = chineseVoices.find(v => 
+                        v.name.includes('Ting') || v.name.includes('Mei') || v.name.includes('Xiao')
+                    ) || chineseVoices[0];
+                    utterance.voice = friendlyVoice;
+                }
+            }
+            
+            // 调整语音参数使其更卡通活泼
+            utterance.rate = 0.75;  // 稍微慢一点
+            utterance.pitch = 1.3;  // 高音调，更可爱
+            utterance.volume = 1.0;
+            
             speechSynth.speak(utterance);
         }
 
